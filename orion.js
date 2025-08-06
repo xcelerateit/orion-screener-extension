@@ -25,13 +25,13 @@ const createOrGetSummary = () => {
 
     const container = document.createElement('div');
     Object.assign(container.style, {
-      padding: '14px 22px',
+      padding: '18px 10px',
       background: '#151515',
       color: '#3ee107ff',
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
       display: 'flex',
       gap: '32px',
-      fontSize: '22px',
+      fontSize: '20px',
       alignItems: 'center',
       borderRadius: '0',
       boxShadow: '0 16px 48px rgba(0,0,0,0.75)',
@@ -67,6 +67,13 @@ const parseNumber = (text) => {
   return isNaN(v) ? 0 : v;
 };
 
+const parsePercent = (text) => {
+  if (!text) return 0;
+  const cleaned = text.replace(/[^\d.-]/g, '');
+  const v = parseFloat(cleaned);
+  return isNaN(v) ? 0 : v;
+};
+
 const formatNum = (n) => {
   return n.toLocaleString();
 };
@@ -80,6 +87,10 @@ const updateSummary = () => {
 
   const headerCells = Array.from(table.querySelectorAll('thead th'));
   const ticksIdx = headerCells.findIndex(th => th.textContent.trim() === 'Ticks 5m');
+  const volumeIdx = headerCells.findIndex(th => th.textContent.trim() === 'Volume 5m');
+  const change1dIdx = headerCells.findIndex(th => th.textContent.trim() === 'Change 1d');
+  const change1hIdx = headerCells.findIndex(th => th.textContent.trim() === 'Change 1h');
+  
   if (ticksIdx === -1) {
     console.log('[OrionSummary] "Ticks 5m" header not found yet');
     return;
@@ -88,14 +99,30 @@ const updateSummary = () => {
   const rows = Array.from(table.querySelectorAll('tbody tr'));
   const totalRows = rows.length;
   let ticksSum = 0;
+  let volumeSum = 0;
+  let change1dSum = 0;
+  let change1hSum = 0;
+  
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells[ticksIdx]) {
       ticksSum += parseNumber(cells[ticksIdx].textContent);
     }
+    if (volumeIdx !== -1 && cells[volumeIdx]) {
+      volumeSum += parseNumber(cells[volumeIdx].textContent);
+    }
+    if (change1dIdx !== -1 && cells[change1dIdx]) {
+      change1dSum += parsePercent(cells[change1dIdx].textContent);
+    }
+    if (change1hIdx !== -1 && cells[change1hIdx]) {
+      change1hSum += parsePercent(cells[change1hIdx].textContent);
+    }
   });
 
-  const avg = totalRows > 0 ? Math.round(ticksSum / totalRows) : 0;
+  const avgTicks = totalRows > 0 ? Math.round(ticksSum / totalRows) : 0;
+  const avgVolume = totalRows > 0 ? Math.round(volumeSum / totalRows) : 0;
+  const avgChange1d = totalRows > 0 ? (change1dSum / totalRows).toFixed(2) : '0.00';
+  const avgChange1h = totalRows > 0 ? (change1hSum / totalRows).toFixed(2) : '0.00';
   const now = new Date();
   const timeStr = `${two(now.getHours())}:${two(now.getMinutes())}`;
 
@@ -104,10 +131,13 @@ const updateSummary = () => {
     <div class="segment"><span class="label">Time:</span><span>${timeStr}</span></div>
     <div class="segment"><span class="label">Coins:</span><span>${formatNum(totalRows)}</span></div>
     <div class="segment"><span class="label">Total ticks:</span><span>${formatNum(ticksSum)}</span></div>
-    <div class="segment"><span class="label">Avg ticks:</span><span>${formatNum(avg)}</span></div>
+    <div class="segment"><span class="label">Avg ticks:</span><span>${formatNum(avgTicks)}</span></div>
+    <div class="segment"><span class="label">Avg vol:</span><span>${formatNum(avgVolume)}</span></div>
+    <div class="segment"><span class="label">Avg 1d:</span><span>${avgChange1d}%</span></div>
+    <div class="segment"><span class="label">Avg 1h:</span><span>${avgChange1h}%</span></div>
   `;
 
-  console.log('[OrionSummary] updated', { totalRows, ticksSum, avg, timeStr });
+  console.log('[OrionSummary] updated', { totalRows, ticksSum, avgTicks, volumeSum, avgVolume, avgChange1d, avgChange1h, timeStr });
 };
 
 const init = () => {
