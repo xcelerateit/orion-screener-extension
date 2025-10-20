@@ -16,9 +16,9 @@ const createOrGetSummary = () => {
       zIndex: '2147483647',
       pointerEvents: 'auto',
       display: 'block',
-      width: '80%',
+      width: '85%',
       boxSizing: 'border-box',
-      padding: '0 20px',
+      padding: '0 10px',
     });
 
     const shadow = host.attachShadow({ mode: 'open' });
@@ -30,7 +30,7 @@ const createOrGetSummary = () => {
       color: '#3ee107ff',
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
       display: 'flex',
-      gap: '32px',
+      gap: '20px',
       fontSize: '20px',
       alignItems: 'center',
       borderRadius: '0',
@@ -121,23 +121,16 @@ const updateSummary = () => {
 
   const avgTicks = totalRows > 0 ? Math.round(ticksSum / totalRows) : 0;
   const avgVolume = totalRows > 0 ? Math.round(volumeSum / totalRows) : 0;
-  const avgChange1d = totalRows > 0 ? (change1dSum / totalRows).toFixed(2) : '0.00';
-  const avgChange1h = totalRows > 0 ? (change1hSum / totalRows).toFixed(2) : '0.00';
-  const now = new Date();
-  const timeStr = `${two(now.getHours())}:${two(now.getMinutes())}`;
 
   const summary = createOrGetSummary();
   summary.innerHTML = `
-    <div class="segment"><span class="label">Time:</span><span>${timeStr}</span></div>
     <div class="segment"><span class="label">Coins:</span><span>${formatNum(totalRows)}</span></div>
     <div class="segment"><span class="label">Total ticks:</span><span>${formatNum(ticksSum)}</span></div>
     <div class="segment"><span class="label">Avg ticks:</span><span>${formatNum(avgTicks)}</span></div>
     <div class="segment"><span class="label">Avg vol:</span><span>${formatNum(avgVolume)}</span></div>
-    <div class="segment"><span class="label">Avg 1d:</span><span>${avgChange1d}%</span></div>
-    <div class="segment"><span class="label">Avg 1h:</span><span>${avgChange1h}%</span></div>
   `;
 
-  console.log('[OrionSummary] updated', { totalRows, ticksSum, avgTicks, volumeSum, avgVolume, avgChange1d, avgChange1h, timeStr });
+  console.log('[OrionSummary] updated', { totalRows, ticksSum, avgTicks, volumeSum, avgVolume, timeStr });
 };
 
 const init = () => {
